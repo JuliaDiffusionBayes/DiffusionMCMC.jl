@@ -17,6 +17,10 @@ jobs:
       julia: 1.3
       script: julia --project=docs -e '
           using Pkg;
+          Pkg.clone("https://github.com/JuliaDiffusionBayes/DiffusionDefinition.jl");
+          Pkg.clone("https://github.com/JuliaDiffusionBayes/DiffObservScheme.jl");
+          Pkg.clone("https://github.com/JuliaDiffusionBayes/GuidedProposals.jl");
+          Pkg.clone("https://github.com/JuliaDiffusionBayes/StochasticProcessMCMC.jl");
           Pkg.develop(PackageSpec(path=pwd()));
           Pkg.instantiate();
           include("docs/make.jl");'

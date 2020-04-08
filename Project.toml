@@ -3,6 +3,12 @@ uuid = "5cc2c1b2-bc4e-406c-826d-9a6be4d07a07"
 authors = ["Sebastiano Grazzi", "Frank van der Meulen", "Marcin Mider", "Moritz Schauer"]
 version = "0.1.0"
 
+[deps]
+DiffObservScheme = "a6ddd3f2-050f-41aa-9a1f-1d4f9243493f"
+DiffusionDefinition = "c126fcb9-5a08-4fee-b75a-97eb446288b0"
+GuidedProposals = "2d53f948-c29b-4abe-a473-2cf2f1798516"
+StochasticProcessMCMC = "29d6c3af-f8fd-43d7-ab47-4515e425e9d0"
+
 [compat]
 julia = "1.3"
 
