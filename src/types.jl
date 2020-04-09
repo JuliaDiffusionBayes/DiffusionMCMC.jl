@@ -1,11 +1,28 @@
 #===============================================================================
 
-
+    Abstract types reflecting conceptual inheritence structure that come
+    in addition to those defined in StochasticProcessMCMC.jl
 
 ===============================================================================#
+#NOTE possibly superfluous
+"""
+    DiffusionSpecificCallback <: Callback
 
-abstract type DiffusionSpecificCallback <: Callback end
+Supertype of all callbacks specific to diffusion processes.
+"""
+abstract type DiffusionSpecificCallback <: spMCMC.Callback end
 
-abstract type MCMCDiffusionImputation <: MCMCImputation end
+#NOTE possibly superfluous
+"""
+    MCMCDiffusionImputation <: MCMCImputation
 
-abstract type BlockingSwitch <: MCMCUpdateDecorator end
+Supertype of all imputations related to diffusions.
+"""
+abstract type MCMCDiffusionImputation <: spMCMC.MCMCImputation end
+
+"""
+    BlockingType <: MCMCUpdateDecorator
+
+Supertype of all blocking patterns.
+"""
+abstract type BlockingType <: spMCMC.MCMCUpdateDecorator end
