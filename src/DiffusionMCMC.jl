@@ -3,8 +3,8 @@ module DiffusionMCMC
     using DiffusionDefinition
     using DiffObservScheme
     using GuidedProposals
-    using StochasticProcessMCMC
-    const spMCMC = StochasticProcessMCMC
+    using ExtensibleMCMC
+    const eMCMC = ExtensibleMCMC
 
     include("types.jl") # ✔
     include("callbacks.jl") # ✗

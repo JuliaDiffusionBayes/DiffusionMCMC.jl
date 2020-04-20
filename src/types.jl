@@ -10,7 +10,7 @@
 
 Supertype of all callbacks specific to diffusion processes.
 """
-abstract type DiffusionSpecificCallback <: spMCMC.Callback end
+abstract type DiffusionSpecificCallback <: eMCMC.Callback end
 
 #NOTE possibly superfluous
 """
@@ -18,11 +18,11 @@ abstract type DiffusionSpecificCallback <: spMCMC.Callback end
 
 Supertype of all imputations related to diffusions.
 """
-abstract type MCMCDiffusionImputation <: spMCMC.MCMCImputation end
+abstract type MCMCDiffusionImputation <: eMCMC.MCMCImputation end
 
 """
     BlockingType <: MCMCUpdateDecorator
 
 Supertype of all blocking patterns.
 """
-abstract type BlockingType <: spMCMC.MCMCUpdateDecorator end
+abstract type BlockingType <: eMCMC.MCMCUpdateDecorator end

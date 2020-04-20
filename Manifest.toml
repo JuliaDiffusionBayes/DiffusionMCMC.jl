@@ -107,7 +107,7 @@ version = "2.13.0"
 
 [[DiffObservScheme]]
 deps = ["Distributions", "GaussianDistributions", "LinearAlgebra", "Random", "StaticArrays"]
-git-tree-sha1 = "308f8d70f4750ecf80b8076bd5ac53434224a269"
+git-tree-sha1 = "8391e5b8cd77923f9b90375b1cc481fd4c8d9bfc"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaDiffusionBayes/DiffObservScheme.jl"
 uuid = "a6ddd3f2-050f-41aa-9a1f-1d4f9243493f"
@@ -127,7 +127,7 @@ version = "1.0.1"
 
 [[DiffusionDefinition]]
 deps = ["LinearAlgebra", "MacroTools", "Random", "Reexport", "StaticArrays", "Trajectories"]
-git-tree-sha1 = "35f6666295039165bf51cac7acdf9929080cf59d"
+git-tree-sha1 = "404b6c7cea80dd5a0b6f82e82476761091c1c745"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaDiffusionBayes/DiffusionDefinition.jl"
 uuid = "c126fcb9-5a08-4fee-b75a-97eb446288b0"
@@ -160,6 +160,14 @@ deps = ["LinearAlgebra", "Printf", "SparseArrays"]
 git-tree-sha1 = "1672dedeacaab85345fd359ad56dde8fb5d48a45"
 uuid = "d4d017d3-3776-5f7e-afef-a10c40355c18"
 version = "1.6.0"
+
+[[ExtensibleMCMC]]
+deps = ["DataStructures", "Dates", "Distributions", "LinearAlgebra", "Random", "StaticArrays"]
+git-tree-sha1 = "509115b811c9f51206849b9825345570bb2d5881"
+repo-rev = "master"
+repo-url = "https://github.com/JuliaDiffusionBayes/ExtensibleMCMC.jl"
+uuid = "23b8d773-6ad0-4cfa-a2a0-a1f8bd765eb5"
+version = "0.1.0"
 
 [[FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays"]
@@ -197,8 +205,8 @@ uuid = "01680d73-4ee2-5a08-a1aa-533608c188bb"
 version = "0.3.0"
 
 [[GuidedProposals]]
-deps = ["DiffEqCallbacks", "DiffusionDefinition", "LinearAlgebra", "OrdinaryDiffEq", "StaticArrays"]
-git-tree-sha1 = "17e95b21941872b43ec4909cc6aabe35fd6f7dd7"
+deps = ["DiffEqCallbacks", "DiffObservScheme", "DiffusionDefinition", "LinearAlgebra", "OrdinaryDiffEq", "Random", "StaticArrays"]
+git-tree-sha1 = "e80a1cfb5262ba0defc5fa3a58dcfed09edbbe7f"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaDiffusionBayes/GuidedProposals.jl"
 uuid = "2d53f948-c29b-4abe-a473-2cf2f1798516"
@@ -237,6 +245,7 @@ uuid = "1d6d02ad-be62-4b6b-8a6d-2f90e265016e"
 version = "0.1.2"
 
 [[LibGit2]]
+deps = ["Printf"]
 uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
 
 [[Libdl]]
