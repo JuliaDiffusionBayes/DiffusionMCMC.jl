@@ -107,7 +107,7 @@ version = "2.13.0"
 
 [[DiffObservScheme]]
 deps = ["Distributions", "GaussianDistributions", "LinearAlgebra", "Random", "StaticArrays"]
-git-tree-sha1 = "8391e5b8cd77923f9b90375b1cc481fd4c8d9bfc"
+git-tree-sha1 = "ed4789c3c12a956333750e75f069555b2a97b9c7"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaDiffusionBayes/DiffObservScheme.jl"
 uuid = "a6ddd3f2-050f-41aa-9a1f-1d4f9243493f"
@@ -127,7 +127,7 @@ version = "1.0.1"
 
 [[DiffusionDefinition]]
 deps = ["LinearAlgebra", "MacroTools", "Random", "Reexport", "StaticArrays", "Trajectories"]
-git-tree-sha1 = "404b6c7cea80dd5a0b6f82e82476761091c1c745"
+git-tree-sha1 = "3b9b3969a73abb0544ccc542310e8682df51cd82"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaDiffusionBayes/DiffusionDefinition.jl"
 uuid = "c126fcb9-5a08-4fee-b75a-97eb446288b0"
@@ -163,7 +163,7 @@ version = "1.6.0"
 
 [[ExtensibleMCMC]]
 deps = ["DataStructures", "Dates", "Distributions", "LinearAlgebra", "Random", "StaticArrays"]
-git-tree-sha1 = "509115b811c9f51206849b9825345570bb2d5881"
+git-tree-sha1 = "60a81458faff3e57bbe2837163f857b1085e8650"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaDiffusionBayes/ExtensibleMCMC.jl"
 uuid = "23b8d773-6ad0-4cfa-a2a0-a1f8bd765eb5"
@@ -206,7 +206,7 @@ version = "0.3.0"
 
 [[GuidedProposals]]
 deps = ["DiffEqCallbacks", "DiffObservScheme", "DiffusionDefinition", "LinearAlgebra", "OrdinaryDiffEq", "Random", "StaticArrays"]
-git-tree-sha1 = "e80a1cfb5262ba0defc5fa3a58dcfed09edbbe7f"
+git-tree-sha1 = "cf64066ca0a0933ac7604bba4a5741765134a626"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaDiffusionBayes/GuidedProposals.jl"
 uuid = "2d53f948-c29b-4abe-a473-2cf2f1798516"

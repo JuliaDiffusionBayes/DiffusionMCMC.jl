@@ -26,3 +26,10 @@ abstract type MCMCDiffusionImputation <: eMCMC.MCMCImputation end
 Supertype of all blocking patterns.
 """
 abstract type BlockingType <: eMCMC.MCMCUpdateDecorator end
+
+"""
+    GenericMCMCBackend
+
+A flag that no specific backend is passed.
+"""
+struct DiffusionMCMCBackend <: eMCMC.MCMCBackend end

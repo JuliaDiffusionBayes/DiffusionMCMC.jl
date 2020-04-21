@@ -1,95 +1,125 @@
+#===============================================================================
+                        Global workspace for diffusions
+===============================================================================#
 
-struct GlobalDiffusionWorkspace{T,Ttime,TW,TX} <: GlobalWorkspace{T}
-    state::Vector{T}
-    state_history::Vector{Vector{Vector{T}}}
-    state_proposal_history::Vector{Vector{Vector{T}}}
-    acceptance_history::Vector{Vector{Bool}}
+struct DiffusionGlobalSubworkspace{T,TGP,TW,TWn,TX} <: eMCMC.GlobalWorkspace{T}
+    P::TGP
+    WW::TW
+    Wnr::TWn
+    XX::TX
+
+    function DiffusionGlobalSubworkspace{T}(
+            aux_laws,
+            data::AllObservations,
+            tts,
+            args,
+        ) where T
+        N = num_recordings(data)
+        P = map(1:N) do i
+            build_guid_prop(aux_laws[i], data.recordings[i], tts[i], args[i])
+        end
+        traj = map(1:N) do i
+            trajectory(tts[i], data.recordings[i].P)
+        end
+        XX = map(x->x.process, traj)
+        WW = map(x->x.wiener, traj)
+        Wnr = [Wiener(data.recordings[i].P) for i=1:N]
+        new{T,typeof(P),typeof(WW),typeof(Wnr),typeof(XX)}(P, WW, Wnr, XX)
+    end
+end
+
+struct DiffusionGlobalWorkspace{T,SW,SWD,TD} <: eMCMC.GlobalWorkspace{T}
+    sub_ws::SW
+    sub_ws_diff::SWD
+    sub_ws_diff°::SWD
     data::TD
-    P::Vector{Vector{GuidProp{TGP}}}
-    P°::Vector{Vector{GuidProp{TGP}}}
-    WW::Vector{Vector{Trajectory{Ttime,TW}}}
-    WW°::Vector{Vector{Trajectory{Ttime,TW}}}
-    XX::Vector{Vector{Trajectory{Ttime,TX}}}
-    XX°::Vector{Vector{Trajectory{Ttime,TX}}}
-    xx0::Vector{TX}
-    xx0°::Vector{TX}
+    stats::GenericChainStats{T}
 end
 
 function init_global_workspace(
-        ::Val{:DiffusionProblem},
-        schedule::MCMCSchedule,
-        updates::Vector{<:MCMCUpdate},
+        ::DiffusionMCMCBackend,
+        schedule::eMCMC.MCMCSchedule,
+        updates::Vector{<:eMCMC.MCMCUpdate},
         data,
         θinit::Vector{T};
         kwargs...
     ) where T
     dkwargs = Dict(kwargs)
+    M, NU = schedule.num_mcmc_steps, length(updates)
+    #TW = get(dkwargs, :TW, Float64)
+    #TX = get(dkwargs, :TX, Float64)
 
-    Ttime = get(dkwargs, :Ttime, Float64)
-    TW = get(dkwargs, :TW, Float64)
-    TX = get(dkwargs, :TX, Float64)
+    sub_ws = eMCMC.StandardGlobalSubworkspace(M, NU, data, θinit)
 
-    tts = setup_time_grids(
+    sub_ws_diff = DiffusionGlobalSubworkspace{T}(
+        extract_aux_laws(updates, data),
         data,
-        get(dkwargs, :τ, _DEFAULT_TIME_TRANSFORM),
-        get(dkwargs, :dt, 0.01),
-        Ttime,
+        DOS.setup_time_grids(
+            data,
+            get(dkwargs, :dt, 0.01),
+            get(dkwargs, :τ, _DEFAULT_TIME_TRANSFORM),
+            get(dkwargs, :Ttime, Float64),
+            get(dkwargs, :tt, nothing),
+        ),
+        package(get(dkwargs, :guid_prop_args, tuple()), data), # from DiffObservScheme
     )
 
-    GlobalDiffusionWorkspace(
-        θinit,
-        Vector{Vector{Vector{T}}}(undef, schedule.num_mcmc_steps),
-        Vector{Vector{Vector{T}}}(undef, schedule.num_mcmc_steps),
-        Vector{Vecotr{Bool}}(undef, schedule.num_mcmc_steps),
+    DiffusionGlobalWorkspace{T,typeof(sub_ws),typeof(sub_ws_diff),typeof(data)}(
+        sub_ws,
+        sub_ws_diff,
+        deepcopy(sub_ws_diff),
         data,
-        setup_guid_prop_for_data(data, dkwargs[:auxiliary_laws]),
-        setup_guid_prop_for_data(data, dkwargs[:auxiliary_laws]),
-        setup_trajectory(data, tts, TW),
-        setup_trajectory(data, tts, TW),
-        setup_trajectory(data, tts, TX),
-        setup_trajectory(data, tts, TX),
-        setup_starting_points(data, TX),
-        setup_starting_points(data, TX),
+        GenericChainStats(θinit, NU, M),
     )
 end
 
-
-const _VIEW{T} = Array{SubArray{T,1,Array{T,1},Tuple{UnitRange{Int64}},true},1} where T
-
-struct WorkspaceDiffusion{T,Ttime,TW,TX,K} <: LocalWorkspace{T}
-    state::Vector{T}
-    state°::Vector{T}
-    local_to_global_idx::Vector{K<:Integer}
-    state_history::Vector{Vector{Vector{T}}}
-    state_proposal_history::Vector{Vector{Vector{T}}}
-    data::TD
-    P::_VIEW{GuidProp{TGP}}
-    P°::_VIEW{GuidProp{TGP}}
-    WW::_VIEW{Trajectory{Ttime,TW}}
-    WW°::_VIEW{Trajectory{Ttime,TW}}
-    XX::_VIEW{Trajectory{Ttime,TX}}
-    XX°::_VIEW{Trajectory{Ttime,TX}}
-    xx0::Vector{AbstractArray{TX}}
-    xx0°::Vector{AbstractArray{TX}}
-    xx0_priors::Vector{}
-    adpt_ws::AdaptationWorkspace... #TODO
+function extract_aux_laws(updates::Vector{<:eMCMC.MCMCUpdate}, data)
+    imps = filter(x->typeof(x)<:PathImputation, updates)
+    N = length(imps)
+    @assert N > 0
+    aux_laws = map(x->DOS.package(x.aux_laws, data), imps)
+    @assert N == 1 || all([aux_laws[1]==aux_laws[i] for i=2:N])
+    aux_laws[1]
 end
 
-function create_workspace(
-        ::Val{:DiffusionProblem},
-        mcmcupdate,
-        global_ws,
-        block_layout
+
+#===============================================================================
+                        Local workspace for diffusions
+===============================================================================#
+
+struct DiffusionLocalSubworkspace{T,TP,TW,TWn,TX,Tz0} <: eMCMC.LocalWorkspace{T}
+    ll::Vector{Float64}
+    ll_history::Vector{Vector{Float64}}
+    ll_correct::Vector{Bool}
+    P::TP
+    WW::TW
+    Wnr::TWn
+    XX::TX
+    z0s::Tz0
+
+    function DiffusionLocalSubworkspace{T}(
+            ll, ll_hist, ll_correct, P::TP, WW::TW, Wnr::TWn, XX::TX, z0s::Tz0
+        ) where {T,TP,TW,TWn,TX,Tz0}
+        new{T,TP,TW,TWn,TX,Tz0}(ll, ll_hist, ll_correct, P, WW, Wnr, XX, z0s)
+    end
+end
+
+function DiffusionLocalSubworkspace{T}(
+        sws::DiffusionGlobalSubworkspace,
+        block_layout,
+        num_mcmc_steps
+    ) where T
+    N, M = num_mcmc_steps, length(block_layout)
+    DiffusionLocalSubworkspace{T}(
+        Float64[-Inf for _=1:M],
+        [zeros(Float64, M) for _=1:N],
+        zeros(Bool, M),
+        block_view(sws.P, block_layout),
+        block_view(sws.WW, block_layout),
+        block_wiener(sws.Wnr, block_layout),
+        block_view(sws.XX, block_layout),
+        block_start_pts(sws.XX, block_layout)
     )
-    P = block_view(global_ws.P, block_layout)
-    P° = block_view(global_ws.P°, block_layout)
-    WW = block_view(global_ws.WW, block_layout)
-    WW° = block_view(global_ws.WW°, block_layout)
-    XX = block_view(global_ws.XX, block_layout)
-    XX° = block_view(global_ws.XX°, block_layout)
-    xx0 = block_view_start_pt(global_ws.xx0, block_layout) # possibly remove
-    xx0° = block_view_start_pt(global_ws.xx0, block_layout) # possibly remove
-    xx0_priors = block_setup_x0_priors(global_ws.data, block_layout)
 end
 
 function block_view(v, layout)
@@ -100,20 +130,53 @@ function block_view(v, layout::Nothing)
     [ view(v[i], :) for i in 1:length(v) ]
 end
 
-block_view_start_pt(v, layout::Nothing) = view(v, :)
-
-function block_view_start_pt(v, layout)
-    [
-        ( 1 in bl_i_range ? view(v, bl_i) : deepcopy(v[bl_i]) )
-        for (bl_i, bl_i_range) in layout
-    ]
+function block_start_pts(XX, layout::Nothing)
+    [ deepcopy(X[1].x[1]) for X in XX ]
 end
 
-function block_setup_priors(data, layout)
-    # implement this in DiffObservScheme.jl
+function block_start_pts(XX, layout)
+    [ deepcopy(XX[bl_i][bl_i_range[1]].x[1]) for (bl_i, bl_i_range) in layout ]
 end
 
-function create_workspaces(v::Val{:DiffusionProblem}, mcmc::MCMC, global_ws)
+block_wiener(Wnr, layout::Nothing) = Wnr
+
+block_wiener(Wnr, layout) = [ deepcopy(Wnr[bl_i]) for (bl_i, _) in layout ]
+
+
+struct DiffusionLocalWorkspace{T,SW,SWD,Tpr} <: eMCMC.LocalWorkspace{T}
+    sub_ws::SW
+    sub_ws°::SW
+    sub_ws_diff::SWD
+    sub_ws_diff°::SWD
+    xx0_priors::Tpr
+end
+
+function create_workspace(
+        backend::DiffusionMCMCBackend,
+        mcmcupdate,
+        global_ws,
+        block_layout,
+        num_mcmc_steps,
+    )
+    state = (
+        typeof(mcmcupdate) <: MCMCParamUpdate ?
+        global_ws.sub_ws.state[mcmcupdate.loc2glob_idx] :
+        undef
+    )
+    sub_ws = StandardLocalSubworkspace(state, num_mcmc_steps)
+    xx0_priors = block_setup_x0_priors(global_ws.data, block_layout) #TODO
+    sub_ws_diff = DiffusionLocalSubworkspace{T}(
+        global_ws.sub_ws_diff, block_layout, num_mcmc_steps
+    )
+    sub_ws_diff° = DiffusionLocalSubworkspace{T}(
+        global_ws.sub_ws_diff°, block_layout, num_mcmc_steps
+    )
+    new{T,typeof(sub_ws),typeof(sub_ws_diff), typeof(xx0_priors)}(
+        sub_ws, deepcopy(sub_ws), sub_ws_diff, sub_ws_diff°, xx0_priors
+    )
+end
+
+function create_workspaces(backend::DiffusionMCMCBackend, mcmc::MCMC, global_ws)
     current_block_flag = check_for_blocking(mcmc.updates_and_decorators)
 
     current_block_layout = init_block_layout(global_ws.data, current_block_flag)
