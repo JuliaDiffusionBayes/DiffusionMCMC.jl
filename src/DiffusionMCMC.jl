@@ -1,11 +1,12 @@
 module DiffusionMCMC
 
     using DiffusionDefinition
-    using DiffObservScheme
+    using ObservationSchemes
     using GuidedProposals
     using ExtensibleMCMC
+    import ExtensibleMCMC: ll, ll°, state, state°, accepted
     const eMCMC = ExtensibleMCMC
-    const DOS = DiffObservScheme
+    const OBS = ObservationSchemes
 
     const _DEFAULT_TIME_TRANSFORM = identity
 
@@ -14,6 +15,8 @@ module DiffusionMCMC
     include("blocking.jl") # ✗/✔ (TODO some additional functions to be written)
     include("workspaces.jl") # ✗
     include("updates.jl") # ✗
+    include("schedule.jl")
+    include("run!_alterations.jl")
 
     export DiffusionMCMCBackend
     export PathImputation, StartingPointsUpdate, StartingPointsLangevinUpdate

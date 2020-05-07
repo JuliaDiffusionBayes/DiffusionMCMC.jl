@@ -12,7 +12,6 @@ Supertype of all callbacks specific to diffusion processes.
 """
 abstract type DiffusionSpecificCallback <: eMCMC.Callback end
 
-#NOTE possibly superfluous
 """
     MCMCDiffusionImputation <: MCMCImputation
 
