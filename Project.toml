@@ -8,6 +8,7 @@ DiffusionDefinition = "c126fcb9-5a08-4fee-b75a-97eb446288b0"
 ExtensibleMCMC = "23b8d773-6ad0-4cfa-a2a0-a1f8bd765eb5"
 GuidedProposals = "2d53f948-c29b-4abe-a473-2cf2f1798516"
 ObservationSchemes = "af94d80e-94fa-4c0b-866a-2d8bf15822bc"
+OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 
 [compat]
 julia = "1.4"

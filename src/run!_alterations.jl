@@ -13,11 +13,11 @@ function eMCMC.update!(
     num_recordings = length(ws.P)
 
     # this loop should be entirely parallelizable, as recordings
-    # are---by design---conditionally independent
+    # are—by design—conditionally independent
     for i in 1:num_recordings
         _, ws°.ll[i] = forward_guide!(
-            ws°.WW[i], ws°.XX[i], ws°.Wnr[i], ws.P[i], ws.XX[i][1].x[1], ws.WW[i],
-            update.ρs[i]
+            ws.P[i], ws°.XX[i], ws°.WW[i], ws.WW[i], update.ρs[i], _LL,
+            ws.XX[i][1].x[1]; Wnr=ws°.Wnr[i]
         )
         eMCMC.accept_reject!(
             update, global_ws, local_ws, step, ws.ll[i], ws°.ll[i], i
@@ -42,16 +42,18 @@ function eMCMC.register_accept_reject_results!(
         i=1
     )
     accepted && swap_paths!(local_ws, i)
-    save_path(global_ws.sub_ws_diff.XX, step, i) #TODO
+    save_path!(global_ws, step, i)
     eMCMC.register_accept_reject_results!(accepted, updt, local_ws, step, i)
 end
 
 _TEMP_SAVED_PATHS = []
 
-function save_path(XX, step, i)
-    step.mcmciter % 100 == 0 && step.pidx == 1 && push!(_TEMP_SAVED_PATHS, deepcopy(XX))
+function save_path!(global_ws, step, i)
+    save_now = ( step.mcmciter % 100 == 0 && step.pidx == 1 ) #TODO change
+    save_now && save!(global_ws.XX_buffer, global_ws.sub_ws_diff.XX)
 end
 
+#TODO there is nothing special about this step, incorporate in generic eMCMC
 function eMCMC.register_accept_reject_results!(
         _accepted::Bool,
         updt,
@@ -88,6 +90,7 @@ function swap_paths!(ws::DiffusionLocalWorkspace, i)
     swap!(s°.XX[i], s.XX[i])
 end
 
+#=
 function recompute_loglikhd!(ws::DiffusionLocalWorkspace, i) #TODO deprecate
     num_segments = length(ws.XX[i])
     ll_tot = 0.0
@@ -96,7 +99,7 @@ function recompute_loglikhd!(ws::DiffusionLocalWorkspace, i) #TODO deprecate
     end
     ll(ws)[i] = ll_tot
 end
-
+=#
 #===============================================================================
                         Starting point imputation
 ===============================================================================#
@@ -171,36 +174,43 @@ end
 #===============================================================================
                             Parameter update
 ===============================================================================#
-
-# compute_ll!(updt, global_ws, ws, step)
-# accept_reject!(updt, global_ws, ws, step)
-# eMCMC.update!(global_ws.stats, global_ws, step)
-
-function set_proposal!(
+function eMCMC.set_proposal!(
         updt::eMCMC.MCMCParamUpdate,
         global_ws::DiffusionGlobalWorkspace,
         local_ws::DiffusionLocalWorkspace,
         step,
     )
-    ws, ws° = global_ws.sub_ws_diff, global_ws.sub_ws_diff°
+    ws, ws° = local_ws.sub_ws_diff, local_ws.sub_ws_diff°
     num_recordings = length(ws.WW)
+    eMCMC._set_local_state°(updt, global_ws, local_ws, step)
 
     for i in 1:num_recordings
-        change_type = which_param_changed(updt, ws°.P[i], state°(local_ws)) #TODO
-
-        change_type == :none && continue
-
-        set_parameters!(ws°.P[i], coords(updt), state°(local_ws))
-        (
-            !step.same_layout[i] || change_type == :extensive
-        ) && backward_filter(ws°.P[i])
-
-        success, ws°.ll[i] = solve_and_ll!(
-            ws°.XX[i], ws.WW[i], ws.P[i], ws.XX[i][1].y[1]
+        critical_change = DD.set_parameters!(
+            ws.P[i],
+            ws°.P[i],
+            state°(local_ws),
+            local_ws.loc_pnames.vp_names[i],
+            local_ws.loc_pnames.vp_names_aux[i],
+            local_ws.loc_pnames.θ_local_names[i],
+            local_ws.loc_pnames.θ_local_aux_names[i],
+            local_ws.loc_pnames.θ_local_obs[i],
+            local_ws.critical_param_change[i],
         )
-        success || return # ...
+        step.same_layout[i] || (critical_change = true)
+
+        #-----------------------------------------------#
+        # this is where most of the computation happens #
+        critical_change && backward_filter!(ws°.P[i])
+        #-----------------------------------------------#
+
+        success, ws°.ll[i] = GP.solve_and_ll!(
+            ws°.XX[i], ws.WW[i], ws°.P[i], ws.XX[i][1].x[1]
+        )
+        success || return
     end
 end
+
+#=
 
 function eMCMC.set_parameters!(
         ::eMCMC.Proposal,
@@ -231,6 +241,7 @@ function eMCMC.set_parameters!(
         eMCMC.subidx(state(global_ws), updt)
     )
 end
+=#
 
 #=
 function eMCMC.update!()
@@ -250,7 +261,7 @@ function eMCMC.compute_ll!(
         local_ws::DiffusionLocalWorkspace,
         step,
     )
-    nothing
+    ll°(local_ws, step.mcmciter) .= ll°(local_ws)
 end
 
 function log_prior(
@@ -262,7 +273,7 @@ function log_prior(
     )
     y° = ws.sub_ws_gp°.XX[i][1].y[1]
     # possibly get rid of the first one
-    logpdf(ws.x0_prior, y°) + logpdf(updt.prior, state°(local_ws))# + log_likelihood_obs(ws.sub_ws_gp.P[1], y°) #TODO integrate the latter directly into ll
+    logpdf(ws.x0_prior, y°) + logpdf(updt.prior, state°(local_ws))
 end
 
 function log_prior(
@@ -274,7 +285,7 @@ function log_prior(
     )
     y = ws.sub_ws_gp.XX[i][1].y[1]
     # possibly get rid of the first one
-    logpdf(ws.x0_prior, y) + logpdf(updt.prior, state(local_ws))# + log_likelihood_obs(ws.sub_ws_gp.P[1], y) #TODO integrate the latter directly into ll
+    logpdf(ws.x0_prior, y) + logpdf(updt.prior, state(local_ws))
 end
 
 
@@ -285,20 +296,22 @@ end
 function eMCMC.register_accept_reject_results!(
         accepted::Bool,
         updt::eMCMC.MCMCParamUpdate,
-        local_ws::DiffusionLocalWorkspace,
         global_ws::DiffusionGlobalWorkspace,
+        local_ws::DiffusionLocalWorkspace,
         step,
-        i=1
+        ::Any
     )
-    accepted && swap_laws_and_paths!(local_ws, i)
-    eMCMC.register_accept_reject_results!(accepted, updt, local_ws, step, i)
-    eMCMC.set_chain_param!(accepted, updt, global_ws, local_ws)
+    accepted && swap_laws_and_paths!(local_ws)
+    eMCMC.register_accept_reject_results!(accepted, updt, local_ws, step, 1)
+    eMCMC.set_chain_param!(accepted, updt, global_ws, local_ws, step)
 end
 
-function swap_laws_and_rest!(ws::DiffusionLocalWorkspace, i)
+function swap_laws_and_paths!(ws::DiffusionLocalWorkspace)
     s°, s = ws.sub_ws_diff°, ws.sub_ws_diff
-    swap!(s°.P[i], s.P[i])
-    swap!(s°.XX[i], s.XX[i])
+    for i in eachindex(s°.P, s.P)
+        swap!(s°.P[i], s.P[i])
+        swap!(s°.XX[i], s.XX[i])
+    end
 end
 
 
@@ -328,6 +341,7 @@ function eMCMC.update!(
         ws::DiffusionLocalWorkspace,
         step,
     )
+    #step.mcmciter % 1 == 0 && println("$(step.mcmciter)")
     eMCMC.proposal!(updt, global_ws, ws, step) # specific to updt, see `updates.jl`
     eMCMC.set_proposal!(updt, global_ws, ws, step)
     eMCMC.compute_ll!(updt, global_ws, ws, step)

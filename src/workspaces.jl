@@ -1,7 +1,51 @@
 #===============================================================================
+
+    Defines:
+        - DiffusionGlobalWorkspace      : global workspace for diffusions
+        - DiffusionGlobalSubworkspace   : convenience object with containers
+        - DiffusionLocalWorkspace       : local workspace for diffusions
+        - DiffusionLocalSubworkspace    : convenience object with containers
+        - LocalUpdtParamNames           : convenience object for setting params
+    and methods for them.
+
+
+===============================================================================#
+
+
+#===============================================================================
                         Global workspace for diffusions
 ===============================================================================#
 
+"""
+    struct DiffusionGlobalSubworkspace{T,TGP,TW,TWn,TX} <: eMCMC.GlobalWorkspace{T}
+        P::TGP
+        WW::TW
+        Wnr::TWn
+        XX::TX
+    end
+
+Convenience sub-workspace that holds
+- `P::Vector{<:Vector{<:GuidProp}}`: the `GuidProp` laws [TODO change to PP or
+                                     PPP]
+- `WW::Vector{<:Vector{<:Trajectory}}`: the containers for sampling the Wiener
+                                        noise
+- `Wnr::Vector{<:Wiener}`: the flags for the Wiener noise
+- `XX::Vector{<:Vector{<:Trajectory}}`: the containers for sampling the
+                                        diffusion paths
+The outer array corresponds to successive `recording`s, the inner arrays
+correspond to successive observations within each recording. Each
+`DiffusionSubworkspace` has two `DiffusionGlobalSubworkspace`s, one for the
+accepted law/path another for the proposal.
+
+    DiffusionGlobalSubworkspace{T}(
+        aux_laws, data::AllObservations, tts, args,
+    ) where T
+
+A standard constructor. `aux_laws` is a list of auxiliary laws (one for each
+recording), `data` holds the observations, `tts` are the time-grids on which
+to do imputation when sampling and `args` are additional positional arguments
+passed to initializers of `GuidProp`.
+"""
 struct DiffusionGlobalSubworkspace{T,TGP,TW,TWn,TX} <: eMCMC.GlobalWorkspace{T}
     P::TGP
     WW::TW
@@ -9,47 +53,77 @@ struct DiffusionGlobalSubworkspace{T,TGP,TW,TWn,TX} <: eMCMC.GlobalWorkspace{T}
     XX::TX
 
     function DiffusionGlobalSubworkspace{T}(
-            aux_laws,
-            data::AllObservations,
-            tts,
-            args,
+            aux_laws, data::AllObservations, tts, args,
         ) where T
         N = num_recordings(data)
         P = map(1:N) do i
             build_guid_prop(aux_laws[i], data.recordings[i], tts[i], args[i])
         end
+
         traj = map(1:N) do i
             trajectory(tts[i], data.recordings[i].P)
         end
         XX = map(x->x.process, traj)
         WW = map(x->x.wiener, traj)
         Wnr = [Wiener(data.recordings[i].P) for i=1:N]
-        init!(P, WW, Wnr, XX, data)
+        init_paths!(P, WW, Wnr, XX, data)
         new{T,typeof(P),typeof(WW),typeof(Wnr),typeof(XX)}(P, WW, Wnr, XX)
     end
 end
 
-function init!(P, WW, Wnr, XX, data)
+"""
+    init_paths!(P, WW, Wnr, XX, data)
+
+Sample paths of guided proposals without using the preconditioned Crank–Nicolson
+scheme.
+"""
+function init_paths!(P, WW, Wnr, XX, data)
     num_recordings = length(P)
 
     # this loop should be entirely parallelizable, as recordings
-    # are---by design---conditionally independent
+    # are—by design—conditionally independent
     for i in 1:num_recordings
         success = false
         while !success
-            success, _ = forward_guide!(
-                WW[i], XX[i], Wnr[i], P[i], rand(data.recordings[i].x0_prior)
-            )
+            y1 = rand(data.recordings[i].x0_prior)
+            success = forward_guide!(P[i], XX[i], WW[i], y1; Wnr=Wnr[i])
         end
     end
 end
 
-struct DiffusionGlobalWorkspace{T,SW,SWD,TD} <: eMCMC.GlobalWorkspace{T}
+"""
+    struct DiffusionGlobalWorkspace{T,SW,SWD,TD,TX} <: eMCMC.GlobalWorkspace{T}
+        sub_ws::SW
+        sub_ws_diff::SWD
+        sub_ws_diff°::SWD
+        data::TD
+        stats::GenericChainStats{T}
+        XX_buffer::TX
+        pnames::Vector{Symbol}
+    end
+
+Global workspace for MCMC problems concerning diffusions.
+
+# Arguments
+- `sub_ws`: `GenericGlobalSubworkspace` from `ExtensibleMCMC` that stores info
+            about the parameter chain
+- `sub_ws_diff`: `DiffusionGlobalSubworkspace` containers for the accepted
+                 diffusion law/paths
+- `sub_ws_diff°`: `DiffusionGlobalSubworkspace` containers for the proposed
+                  diffusion law/paths
+- `data`: observations
+- `stats::GenericChainStats`: generic online statistics for the param chain
+- `XX_buffer`: cache for saving a chain of paths
+- `pnames`: a list of parameter names that are being updated
+"""
+struct DiffusionGlobalWorkspace{T,SW,SWD,TD,TX} <: eMCMC.GlobalWorkspace{T}
     sub_ws::SW
     sub_ws_diff::SWD
     sub_ws_diff°::SWD
     data::TD
     stats::GenericChainStats{T}
+    XX_buffer::TX
+    pnames::Vector{Symbol}
 end
 
 function eMCMC.init_global_workspace(
@@ -57,15 +131,16 @@ function eMCMC.init_global_workspace(
         num_mcmc_steps,
         updates::Vector{<:eMCMC.MCMCUpdate},
         data,
-        θinit::Vector{T};
+        θinit::OrderedDict{Symbol,T};
         kwargs...
     ) where T
     dkwargs = Dict(kwargs)
     M, NU = num_mcmc_steps, length(updates)
-    #TW = get(dkwargs, :TW, Float64)
-    #TX = get(dkwargs, :TX, Float64)
 
-    sub_ws = eMCMC.StandardGlobalSubworkspace(M, NU, data, θinit)
+    _θ_init = collect(values(θinit))
+    _pnames = collect(keys(θinit))
+
+    sub_ws = eMCMC.StandardGlobalSubworkspace(M, NU, data, _θ_init)
 
     sub_ws_diff = DiffusionGlobalSubworkspace{T}(
         extract_aux_laws(updates, data),
@@ -80,17 +155,23 @@ function eMCMC.init_global_workspace(
         package(get(dkwargs, :guid_prop_args, tuple()), data), # from ObservationSchemes
     )
 
-    DiffusionGlobalWorkspace{T,typeof(sub_ws),typeof(sub_ws_diff),typeof(data)}(
+    path_saving_buffer = PathSavingBuffer(
+        sub_ws_diff.XX,
+        get(dkwargs, :path_buffer_size, 1)
+    )
+
+    SW, SWD, TD = typeof(sub_ws), typeof(sub_ws_diff), typeof(data)
+    TX = typeof(path_saving_buffer)
+
+    DiffusionGlobalWorkspace{T,SW,SWD,TD,TX}(
         sub_ws,
         sub_ws_diff,
         deepcopy(sub_ws_diff),
         data,
-        GenericChainStats(θinit, NU, M),
+        GenericChainStats(_θ_init, NU, M),
+        path_saving_buffer,
+        _pnames,
     )
-end
-
-function init_XX_hist(XX, step)
-
 end
 
 function extract_aux_laws(updates::Vector{<:eMCMC.MCMCUpdate}, data)
@@ -105,7 +186,27 @@ end
 #===============================================================================
                         Local workspace for diffusions
 ===============================================================================#
+"""
+    struct DiffusionLocalSubworkspace{T,TP,TW,TWn,TX,Tz0} <: eMCMC.LocalWorkspace{T}
+        ll::Vector{Float64}
+        ll_history::Vector{Vector{Float64}}
+        P::TP
+        WW::TW
+        Wnr::TWn
+        XX::TX
+        z0s::Tz0
+    end
 
+Convenience sub-workspace that holds
+- `ll::Vector{Float64}`: computational buffer for log-likelihoods (one for each
+                         recording)
+- `ll_history::Vector{Vector{Float64}}`:  history of all log-likelihoods
+- `P`: appropriately shaped views to containers with `GuidProp`s
+- `WW`: appropriately shaped views to containers for sampled Wiener process
+- `Wnr`: list of Wiener flags for each recording
+- `XX`: appropriately shaped views to containers for sampled diffusion paths
+- `z0s`: list of white noise for starting points (one for each recording)
+"""
 struct DiffusionLocalSubworkspace{T,TP,TW,TWn,TX,Tz0} <: eMCMC.LocalWorkspace{T}
     ll::Vector{Float64}
     ll_history::Vector{Vector{Float64}}
@@ -159,6 +260,66 @@ block_wiener(Wnr, layout::Nothing) = Wnr
 
 block_wiener(Wnr, layout) = [ deepcopy(Wnr[bl_i]) for (bl_i, _) in layout ]
 
+const _SYMS = Tuple{Vararg{Pair{Int64,Symbol},N} where N}
+const _OBSIDX = Tuple{Vararg{Pair{Int64,Int64},N} where N}
+
+struct LocalUpdtParamNames
+    vp_names::Vector{Tuple{Vararg{Symbol,N} where N}}
+    vp_names_aux::Vector{Vector{Tuple{Vararg{Symbol,N} where N}}}
+    θ_local_names::Vector{_SYMS}
+    θ_local_aux_names::Vector{Vector{_SYMS}}
+    θ_local_obs::Vector{Vector{_OBSIDX}}
+
+    function LocalUpdtParamNames(
+            PPP::AbstractArray{<:AbstractArray{<:GuidProp}},
+            data::AllObservations,
+            θinit::Vector{Symbol},
+        )
+        psym, oind = OBS.local_symbols(data, PPP, x->x.P_target, θinit)
+        pauxsym, _ = OBS.local_symbols(data, PPP, x->x.P_aux, θinit)
+
+        new(
+            [DD.var_parameter_names(PP) for PP in PPP],
+            [[DD.var_parameter_names(P.P_aux) for P in PP] for PP in PPP],
+            first.(psym), # target laws are the same on each obs of a single rec
+            pauxsym,
+            oind,
+        )
+    end
+
+    LocalUpdtParamNames() = new()
+end
+
+"""
+    struct DiffusionLocalWorkspace{T,SW,SWD,Tpr} <: eMCMC.LocalWorkspace{T}
+        sub_ws::SW
+        sub_ws°::SW
+        sub_ws_diff::SWD
+        sub_ws_diff°::SWD
+        xx0_priors::Tpr
+        acceptance_history::Vector{Vector{Bool}}
+        loc_pnames::LocalUpdtParamNames
+        critical_param_change::Vector{Bool}
+    end
+
+Local workspace for MCMC problems concerning diffusions.
+
+# Arguments
+- `sub_ws`: `GenericLocalSubworkspace` from `ExtensibleMCMC` that acts as a
+            local cache for some light parameter computations
+- `sub_ws°`: same as `sub_ws`, but concerns the proposed parameter
+- `sub_ws_diff`: `DiffusionLocalSubworkspace`, views to containers for the
+                 accepted diffusion law/paths
+- `sub_ws_diff°`: `DiffusionLocalSubworkspace`, views to containers for the
+                  proposed diffusion law/paths
+- `xx0_priors`: priors over starting points
+- `acceptance_history`: history of results from the accept/reject
+                        Metropolis–Hastings step
+- `loc_pnames`: various lists of parameter names helping in performing the
+                update in a clean way
+- `critical_param_change`: a list of flags for whether a given update by itself
+                           prompts for recomputation of the guiding term
+"""
 struct DiffusionLocalWorkspace{T,SW,SWD,Tpr} <: eMCMC.LocalWorkspace{T}
     sub_ws::SW
     sub_ws°::SW
@@ -166,6 +327,8 @@ struct DiffusionLocalWorkspace{T,SW,SWD,Tpr} <: eMCMC.LocalWorkspace{T}
     sub_ws_diff°::SWD
     xx0_priors::Tpr
     acceptance_history::Vector{Vector{Bool}}
+    loc_pnames::LocalUpdtParamNames
+    critical_param_change::Vector{Bool}
 end
 
 function create_workspace(
@@ -186,7 +349,7 @@ function create_workspace(
     sub_ws_diff = DiffusionLocalSubworkspace{T}(
         global_ws.sub_ws_diff, block_layout, num_mcmc_steps
     )
-    init_ll!(sub_ws_diff, global_ws)
+    init_ll!(sub_ws_diff)
 
     sub_ws_diff° = DiffusionLocalSubworkspace{T}(
         global_ws.sub_ws_diff°, block_layout, num_mcmc_steps
@@ -195,19 +358,36 @@ function create_workspace(
 
     init_update!(mcmcupdate, block_layout)
 
+    lpn = (
+        typeof(mcmcupdate) <: eMCMC.MCMCParamUpdate ?
+        LocalUpdtParamNames(
+            sub_ws_diff.P,
+            global_ws.data,
+            global_ws.pnames[eMCMC.coords(mcmcupdate)]
+        ) :
+        LocalUpdtParamNames()
+    )
+    crit_updt = (
+        typeof(mcmcupdate) <: eMCMC.MCMCParamUpdate ?
+        [
+            GP.is_critical_update(
+                PP, lpn.θ_local_aux_names[i], lpn.θ_local_obs[i]
+            ) for (i,PP) in enumerate(sub_ws_diff.P)
+        ] :
+        [false for _ in eachindex(sub_ws_diff.P)]
+    )
+
     DiffusionLocalWorkspace{T,typeof(sub_ws),typeof(sub_ws_diff), typeof(xx0_priors)}(
-        sub_ws, deepcopy(sub_ws), sub_ws_diff, sub_ws_diff°, xx0_priors, a_h
+        sub_ws, deepcopy(sub_ws), sub_ws_diff, sub_ws_diff°, xx0_priors, a_h, lpn,
+        crit_updt,
     )
 end
 
-function init_ll!(sub_ws_diff, global_ws)
-    XX, P = global_ws.sub_ws_diff.XX, global_ws.sub_ws_diff.P
+function init_ll!(sub_ws_diff)
+    XXX, PPP = sub_ws_diff.XX, sub_ws_diff.P
     for i in 1:length(sub_ws_diff.ll)
-        num_segm = length(XX)
-        sub_ws_diff.ll[i] = 0.0
-        for j in 1:length(XX[i])
-            sub_ws_diff.ll[i] += loglikhd(XX[i][j], P[i][j])
-        end
+        recompute_guiding_term!(PPP[i])
+        sub_ws_diff.ll[i] = loglikhd(PPP[i], XXX[i])
     end
 end
 
@@ -257,6 +437,7 @@ function eMCMC.update_workspaces!(
 end
 
 accepted(ws::DiffusionLocalWorkspace, i::Int) = ws.acceptance_history[i]
+set_accepted!(ws::DiffusionLocalWorkspace, i::Int, accepted, j::Int=1) = (ws.acceptance_history[i][j] = accepted)
 ll(ws::DiffusionLocalWorkspace) = ws.sub_ws_diff.ll
 ll°(ws::DiffusionLocalWorkspace) = ws.sub_ws_diff°.ll
 ll(ws::DiffusionLocalWorkspace, i::Int) = ws.sub_ws_diff.ll_history[i]
