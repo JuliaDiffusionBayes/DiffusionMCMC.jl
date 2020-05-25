@@ -1,93 +1,164 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Inference &amp; smoothing for the FitzHugh Nagumo model · DiffusionMCMC.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">DiffusionMCMC.jl</span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../get_started/overview/">Get started</a></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox"/><label class="tocitem" for="menuitem-3"><span class="docs-label">User manual</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/how_extend/">Extension of ExtensibleMCMC.jl</a></li><li><a class="tocitem" href="../../manual/updates_and_decorators/">Updates &amp; Decorators</a></li><li><a class="tocitem" href="../../manual/blocking/">(TODO) Blocking</a></li><li><a class="tocitem" href="../../manual/callbacks/">(TODO) Callbacks</a></li><li><a class="tocitem" href="../../manual/workspaces/">Diffusion Workspaces</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">How to...</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../how_to_guides/smoothing/">(TODO) Do smoothing</a></li><li><a class="tocitem" href="../../how_to_guides/blocking/">(TODO) Do blocking</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox" checked/><label class="tocitem" for="menuitem-5"><span class="docs-label">Tutorials</span><i class="docs-chevron"></i></label><ul class="collapsed"><li class="is-active"><a class="tocitem" href>Inference &amp; smoothing for the FitzHugh Nagumo model</a><ul class="internal"><li><a class="tocitem" href="#Preparation-1"><span>Preparation</span></a></li><li><a class="tocitem" href="#Smoothing-1"><span>Smoothing</span></a></li><li><a class="tocitem" href="#Inference-1"><span>Inference</span></a></li></ul></li><li><a class="tocitem" href="../inference_fpt/">(TODO) Inference from first-passage time observations</a></li><li><a class="tocitem" href="../mixed_effects_models/">(TODO) Mixed-effect models</a></li></ul></li><li><a class="tocitem" href="../../module_index/">Index</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Inference &amp; smoothing for the FitzHugh Nagumo model</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Inference &amp; smoothing for the FitzHugh Nagumo model</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaDiffusionBayes/DiffusionMCMC.jl/blob/master/docs/src/tutorials/simple_inference.md#L" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="tutorials_start-1"><a class="docs-heading-anchor" href="#tutorials_start-1">Inference and smoothing for the FitzHugh–Nagumo model</a><a class="docs-heading-anchor-permalink" href="#tutorials_start-1" title="Permalink"></a></h1><hr/><blockquote><p>In this tutorial we will do smoothing and parameter inference of the partially observed hypoelliptic version of the FitzHugh–Nagumo model.</p></blockquote><h2 id="Preparation-1"><a class="docs-heading-anchor" href="#Preparation-1">Preparation</a><a class="docs-heading-anchor-permalink" href="#Preparation-1" title="Permalink"></a></h2><hr/><pre><code class="language-julia">using DiffusionMCMC, ExtensibleMCMC, GuidedProposals, DiffusionDefinition
-using ObservationSchemes
-const GP = GuidedProposals
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Inference &amp; smoothing for the FitzHugh–Nagumo model · DiffusionMCMC.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">DiffusionMCMC.jl</span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../get_started/overview/">Get started</a></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox"/><label class="tocitem" for="menuitem-3"><span class="docs-label">User manual</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/how_extend/">Extension of ExtensibleMCMC.jl</a></li><li><a class="tocitem" href="../../manual/updates_and_decorators/">Updates &amp; Decorators</a></li><li><a class="tocitem" href="../../manual/blocking/">(TODO) Blocking</a></li><li><a class="tocitem" href="../../manual/callbacks/">(TODO) Callbacks</a></li><li><a class="tocitem" href="../../manual/workspaces/">Diffusion Workspaces</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">How to...</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../how_to_guides/smoothing/">(TODO) Do smoothing</a></li><li><a class="tocitem" href="../../how_to_guides/blocking/">(TODO) Do blocking</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox" checked/><label class="tocitem" for="menuitem-5"><span class="docs-label">Tutorials</span><i class="docs-chevron"></i></label><ul class="collapsed"><li class="is-active"><a class="tocitem" href>Inference &amp; smoothing for the FitzHugh–Nagumo model</a><ul class="internal"><li><a class="tocitem" href="#Preparation-1"><span>Preparation</span></a></li><li><a class="tocitem" href="#Smoothing-1"><span>Smoothing</span></a></li><li><a class="tocitem" href="#Inference-1"><span>Inference</span></a></li></ul></li><li><a class="tocitem" href="../conjugate_updates/">(TODO) Conjugate updates for the FitzHugh–Nagumo model</a></li><li><a class="tocitem" href="../inference_fpt/">(TODO) Inference from first-passage time observations</a></li><li><a class="tocitem" href="../mixed_effects_models/">(TODO) Mixed-effect models</a></li></ul></li><li><a class="tocitem" href="../../module_index/">Index</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Inference &amp; smoothing for the FitzHugh–Nagumo model</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Inference &amp; smoothing for the FitzHugh–Nagumo model</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaDiffusionBayes/DiffusionMCMC.jl/blob/master/docs/src/tutorials/simple_inference.md#L" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="tutorials_start-1"><a class="docs-heading-anchor" href="#tutorials_start-1">Inference and smoothing for the FitzHugh–Nagumo model</a><a class="docs-heading-anchor-permalink" href="#tutorials_start-1" title="Permalink"></a></h1><hr/><blockquote><p>In this tutorial we will do smoothing and parameter inference for the partially observed hypoelliptic version of the FitzHugh–Nagumo model.</p></blockquote><h2 id="Preparation-1"><a class="docs-heading-anchor" href="#Preparation-1">Preparation</a><a class="docs-heading-anchor-permalink" href="#Preparation-1" title="Permalink"></a></h2><hr/><p>Before we can start doing smoothing or inference we need to</p><ul><li>load in the relevant libraries</li><li>generate some data</li><li>and finally, decorate the data using <a href="https://juliadiffusionbayes.github.io/ObservationSchemes.jl/dev/">ObservationSchemes.jl</a></li></ul><h3 id="Prerequisite-libraries-1"><a class="docs-heading-anchor" href="#Prerequisite-libraries-1">Prerequisite libraries</a><a class="docs-heading-anchor-permalink" href="#Prerequisite-libraries-1" title="Permalink"></a></h3><p>We simply load the necessary tools from <a href="https://github.com/JuliaDiffusionBayes">JuliaDiffusionBayes</a> and some additional libraries for using StaticArrays, plotting, and defining an ordered dictionary. We may also define alias names for easy access to functions that are not exported, but need to be accessed</p><pre><code class="language-julia">using DiffusionMCMC, ExtensibleMCMC, GuidedProposals
+using DiffusionDefinition, ObservationSchemes
 const DD = DiffusionDefinition
-const OBS = ObservationSchemes
 const eMCMC = ExtensibleMCMC
 
-using StaticArrays, Random, Plots
-using OrderedCollections
-
-@load_diffusion FitzHughNagumo
-@load_diffusion FitzHughNagumoAux
+using StaticArrays, Plots
+using OrderedCollections</code></pre><h3 id="Simulating-some-data-1"><a class="docs-heading-anchor" href="#Simulating-some-data-1">Simulating some data</a><a class="docs-heading-anchor-permalink" href="#Simulating-some-data-1" title="Permalink"></a></h3><p>For this tutorial we will simulate some artificial data using the FitzHugh–Nagumo model. This diffusion process is already defined in <a href="https://juliadiffusionbayes.github.io/DifusionDefinition.jl/dev/">DiffusionDefinition.jl</a>, so we may simply load it in.</p><pre><code class="language-julia">@load_diffusion FitzHughNagumo
 
 # generate some data
 θ = [0.1, -0.8, 1.5, 0.0, 0.3]
 P = FitzHughNagumo(θ...)
-tt, y1 = 0.0:0.0001:10.0, @SVector [-0.9, -1.0]
+tt, y1 = 0.0:0.0001:10.0, @SVector [-1.0, -1.0]
 X = rand(P, tt, y1)
 data = map(
-	x-&gt;(x[1], x[2][1] + 0.1randn()),
-	collect(zip(X.t, X.x))[1:1000:end]
+    x-&gt;(x[1], x[2][1] + 0.1randn()),
+    collect(zip(X.t, X.x))[1:1000:end]
 )[2:end]
 
-# let&#39;s prepare the data
-recording = (
-	P = P,
-	obs = load_data(
-		ObsScheme(
-			LinearGsnObs(
-				0.0, (@SVector [0.0]);
-				L=(@SMatrix [1.0 0.0]), Σ=(@SMatrix [0.01])
-			)
-		),
-		data
-	),
-	t0 = 0.0,
-	x0_prior = KnownStartingPt(y1),
+# and let&#39;s see how they look
+plot(X, Val(:vs_time), size=(800, 300))
+scatter!(getindex.(data, 1), getindex.(data, 2), label=&quot;data&quot;)</code></pre><p><img src="../../assets/tutorials/simple_inference/fhn_data.png" alt="fhn_data"/></p><h3 id="Data-preparation-1"><a class="docs-heading-anchor" href="#Data-preparation-1">Data preparation</a><a class="docs-heading-anchor-permalink" href="#Data-preparation-1" title="Permalink"></a></h3><p>The final step before doing smoothing or inference is to arrange the data in a format that will be understood by the MCMC sampler. This is done by decorating each observation with additional information about how it was collected adding information about the underlying law and the starting position, and finally, packaging it as a recording and putting into an <code>AllObservations</code> struct. All of this can be done using the package <a href="https://juliadiffusionbayes.github.io/ObservationSchemes.jl/dev/">ObservationSchemes.jl</a>. For more details see [...].</p><pre><code class="language-julia">recording = (
+    P = P,
+    obs = load_data(
+        ObsScheme(
+            LinearGsnObs(
+                0.0, (@SVector [0.0]);
+                L=(@SMatrix [1.0 0.0]), Σ=(@SMatrix [0.01])
+            )
+        ),
+        data
+    ),
+    t0 = 0.0,
+    x0_prior = KnownStartingPt(y1),
 )
 observs = AllObservations()
 add_recording!(observs, recording)
-init_obs, _ = initialize(observs)</code></pre><h2 id="Smoothing-1"><a class="docs-heading-anchor" href="#Smoothing-1">Smoothing</a><a class="docs-heading-anchor-permalink" href="#Smoothing-1" title="Permalink"></a></h2><hr/><pre><code class="language-julia">mcmc_params = (
-    mcmc = MCMC(
-        [
-            PathImputation(0.96, FitzHughNagumoAux),
-        ];
-        backend=DiffusionMCMCBackend(),
-    ),
-    num_mcmc_steps = Integer(1e3),
-    data = init_obs,
-    θinit = OrderedDict(
-	    :none =&gt; -Inf, # no parameters needed for smoothing
-	),
-)
+init_obs, _ = initialize(observs)</code></pre><h2 id="Smoothing-1"><a class="docs-heading-anchor" href="#Smoothing-1">Smoothing</a><a class="docs-heading-anchor-permalink" href="#Smoothing-1" title="Permalink"></a></h2><hr/><p>Smoothing is simply sampling of unobserved path-segments according to the diffusion law conditioned on already made observations. To do it we simply need to define an MCMC chain that does imputation of paths and no updates to parameters.</p><p>We will need to pass an auxiliary law (think of it as a linear approximation to the target diffusion law) and indicate via backend that we wish to use algorithms from <a href="https://juliadiffusionbayes.github.io/DiffusionMCMC.jl/dev/">DiffusionMCMC.jl</a> and not only those from <a href="https://juliadiffusionbayes.github.io/ExtensibleMCMC.jl/dev/">ExtensibleMCMC.jl</a>.</p><pre><code class="language-julia"># auxiliary law
+@load_diffusion FitzHughNagumoAux
 
-mcmc_kwargs = (
-    path_buffer_size = 10,
-	dt = 0.001,
-)
-
-# run the MCMC
-glob_ws, loc_ws = run!(mcmc_params...; mcmc_kwargs...)</code></pre><h2 id="Inference-1"><a class="docs-heading-anchor" href="#Inference-1">Inference</a><a class="docs-heading-anchor-permalink" href="#Inference-1" title="Permalink"></a></h2><hr/><pre><code class="language-julia"># let&#39;s declare which parameters are not changing
-DD.const_parameter_names(::Type{&lt;:FitzHughNagumo}) = (:ϵ, :γ, :β, :σ)
-DD.const_parameter_names(::Type{&lt;:FitzHughNagumoAux}) = (:ϵ, :γ, :β, :σ, :t0, :T, :vT, :xT)
-
-# and initialize for those constant parameters
-init_obs, _ = initialize(observs)
-
-
-# and do the inference
+# main definition of an MCMC algorithm
 mcmc_params = (
     mcmc = MCMC(
         [
+            # sampling of paths with a precond. Crank–Nicolson parameter ρ=0.96
             PathImputation(0.96, FitzHughNagumoAux),
-            RandomWalkUpdate(UniformRandomWalk([0.2]), [1]),
+        ];
+        backend=DiffusionMCMCBackend(),
+    ),
+    num_mcmc_steps = Integer(1e3),
+    data = init_obs,
+    θinit = nothing, # no inference
+)</code></pre><p>We will also size a buffer that holds a thinned chain of sampled paths and define a grid-width for sampling diffusion paths.</p><pre><code class="language-julia"># some additional parameters for the MCMC chain
+mcmc_kwargs = (
+    path_buffer_size = 10,
+    dt = 0.001,
+)</code></pre><p>We can now run the chain.</p><pre><code class="language-julia"># run the MCMC
+glob_ws, loc_ws = run!(mcmc_params...; mcmc_kwargs...)</code></pre><p>It takes about 0.5sec on my laptop...</p><h3 id="Results-1"><a class="docs-heading-anchor" href="#Results-1">Results</a><a class="docs-heading-anchor-permalink" href="#Results-1" title="Permalink"></a></h3><p>The paths are saved in an <code>XX_buffer</code> in a global workspace:</p><pre><code class="language-julia">xs = glob_ws.XX_buffer.XX</code></pre><p>Plotting them is simple enough:</p><pre><code class="language-julia">p = plot(size=(800, 300))
+for i in 1:10
+    plot!(p, xs[i][1], Val(:vs_time), color=[&quot;red&quot; &quot;steelblue&quot;], label=false, alpha=0.4)
+end
+scatter!(p, getindex.(data, 1), getindex.(data, 2), label=&quot;data&quot;)
+display(p)</code></pre><p><img src="../../assets/tutorials/simple_inference/fhn_smoothing.png" alt="fhn_smoothing"/></p><h3 id="Adaptation-1"><a class="docs-heading-anchor" href="#Adaptation-1">Adaptation</a><a class="docs-heading-anchor-permalink" href="#Adaptation-1" title="Permalink"></a></h3><p>Guessing the right value for the memory parameter <span>$ρ$</span> of the preconditioned Crank–Nicolson scheme might be tricky. Having a reasonable value for <span>$ρ$</span> is however essential, as the following example illustrates:</p><pre><code class="language-julia">mcmc_params = (
+    mcmc = MCMC(
+        [
+            # sampling of paths with a precond. Crank–Nicolson parameter ρ=0.1
+            PathImputation(0.1, FitzHughNagumoAux),
+        ];
+        backend=DiffusionMCMCBackend(),
+    ),
+    num_mcmc_steps = Integer(1e4),
+    data = init_obs,
+    θinit = nothing, # no inference
+)</code></pre><p>This time we set <span>$ρ=0.1$</span> and run the chain for <span>$10$</span> times longer than previously.</p><pre><code class="language-julia">glob_ws, loc_ws = run!(mcmc_params...; mcmc_kwargs...)</code></pre><p>When we plot the last <span>$10$</span> paths from a thinned chain however, notice what happens:</p><pre><code class="language-julia">xs = glob_ws.XX_buffer.XX
+p = plot(size=(800, 300))
+for i in 1:10
+    plot!(p, xs[i][1], Val(:vs_time), color=[&quot;red&quot; &quot;steelblue&quot;], label=false, alpha=0.4)
+end
+scatter!(p, getindex.(data, 1), getindex.(data, 2), label=&quot;data&quot;)
+display(p)</code></pre><p><img src="../../assets/tutorials/simple_inference/fhn_smoothing_poor_pcn.png" alt="fhn_smoothing_poor_pcn"/></p><p>It seems that there is only one path! If we inspect the acceptance rate from the last <span>$500$</span> proposals we immediately see what&#39;s wrong:</p><pre><code class="language-julia">julia&gt; (sum(loc_ws[1].acceptance_history[end-500:end])/500)[1]
+0.0</code></pre><p>The acceptance rate is <span>$0.0$</span>. We keep proposing new paths but most of them are simply not good enough and we end up staying where we were!</p><p>Finding the right <span>$ρ$</span> is therefore <strong>very</strong> important. However, it becomes particularly challenging when the number of recordings grows (and we should guess the right value for each one of those) and when we do parameter inference on top of smoothing (as then, different local values of parameters might have drastically different optimal values for <span>$ρ$</span>). To alleviate this problem it is possible to employ adaptive schemes that target acceptance rate of the preconditioned Crank–Nicolson scheme and find <span>$ρ$</span> automatically. To use them, simply pass a relevant flag:</p><pre><code class="language-julia">mcmc_params = (
+    mcmc = MCMC(
+        [
+            # sampling of paths with a precond. Crank–Nicolson parameter ρ=0.1
+            PathImputation(
+                0.1, FitzHughNagumoAux;
+                adpt=AdaptationPathImputation(;
+                    adapt_every_k_steps = 50,
+                    scale = 0.2,
+                )
+            ),
+        ];
+        backend=DiffusionMCMCBackend(),
+    ),
+    num_mcmc_steps = Integer(1e4),
+    data = init_obs,
+    θinit = nothing, # no inference
+)
+glob_ws, loc_ws = run!(mcmc_params...; mcmc_kwargs...)</code></pre><p>First, notice that the acceptance rate of the last <span>$500$</span> draws looks much more encouraging</p><pre><code class="language-julia">julia&gt; (sum(ws[2][1].acceptance_history[end-500:end])/500)[1]
+0.252</code></pre><p>Indeed, the chain has started from <span>$ρ=0.1$</span>, but over the course of sampling, it reached a region of <span>$ρ∼0.95$</span>–<span>$0.97$</span> and stayed there. The last <span>$10$</span> saved paths look much better now</p><pre><code class="language-julia">xs = glob_ws.XX_buffer.XX
+p = plot(size=(800, 300))
+for i in 1:10
+    plot!(p, xs[i][1], Val(:vs_time), color=[&quot;red&quot; &quot;steelblue&quot;], label=false, alpha=0.4)
+end
+scatter!(p, getindex.(data, 1), getindex.(data, 2), label=&quot;data&quot;)
+display(p)</code></pre><p><img src="../../assets/tutorials/simple_inference/fhn_smoothing_adpt_pcn.png" alt="fhn_smoothing_adpt_pcn"/></p><h2 id="Inference-1"><a class="docs-heading-anchor" href="#Inference-1">Inference</a><a class="docs-heading-anchor-permalink" href="#Inference-1" title="Permalink"></a></h2><hr/><p>If some parameters of the underlying process are unknown, then we may perform inference for it by appending the list of MCMC steps with those that update parameters. <strong>Note that the step of imputing the unobserved paths still needs to be present!</strong></p><p>Suppose that we do not know the true value of parameter <span>$s$</span> and we wish to estimate it. To this end, we first specify the parameters which are constat</p><pre><code class="language-julia"># let&#39;s declare which parameters are not changing
+DD.const_parameter_names(::Type{&lt;:FitzHughNagumo}) = (:ϵ, :γ, :β, :σ)
+DD.const_parameter_names(::Type{&lt;:FitzHughNagumoAux}) = (:ϵ, :γ, :β, :σ, :t0, :T, :vT, :xT)</code></pre><p>and re-initialize the data so that an appropriate dependence structure is built internally.</p><pre><code class="language-julia"># and initialize for those constant parameters
+init_obs, _ = initialize(observs)</code></pre><p>An important point is revealed by calling:</p><pre><code class="language-julia">julia&gt; ObservationSchemes.print_parameters(init_obs)
+
+There are 1-many independent recordings.
+There are also 1-many variable parameters.
+* * *
+You may define the var-parameters using the following template:
+# start of template
+using OrderedCollections
+
+θ_init = OrderedDict(
+    :REC1_s =&gt; ... , # param 1
+)
+# end of template
+and in an MCMC setting you may let your parameter update step
+refer to a subset of indices you wish to update using the order
+given above.
+* * *</code></pre><p><strong>We should always pass the initial guess for the parameters in the format specified by <code>print_parameters</code>.</strong></p><p>We can now parameterize the algorithm</p><pre><code class="language-julia">mcmc_params = (
+    mcmc = MCMC(
+        [
+            PathImputation(0.96, FitzHughNagumoAux),
+            RandomWalkUpdate(UniformRandomWalk([0.3]), [1]),
         ];
         backend=DiffusionMCMCBackend(),
     ),
     num_mcmc_steps = Integer(1e3),
     data = init_obs,
     θinit = OrderedDict(
-	    :REC1_s =&gt; -0.8, # param 1
-	),
-    callbacks = eMCMC.Callback[],
+        :REC1_s =&gt; -0.8,
+        #NOTE currently we must start from the same parameter that was set in AllObservations,
+        #TODO relax this in the near future.
+    ),
+)</code></pre><p>and run the sampler</p><pre><code class="language-julia">glob_ws, loc_ws = run!(mcmc_params...; mcmc_kwargs...)</code></pre><p>We can plot the chain as follows:</p><pre><code class="language-julia">plot(map(x-&gt;x[2][1], glob_ws.sub_ws.state_history))</code></pre><p><img src="../../assets/tutorials/simple_inference/fhn_inference_simple_chain.png" alt="fhn_inference_simple_chain"/></p><h3 id="Update-steps-from-[ExtensibleMCMC.jl](https://juliadiffusionbayes.github.io/ExtensibleMCMC.jl/dev/)-1"><a class="docs-heading-anchor" href="#Update-steps-from-[ExtensibleMCMC.jl](https://juliadiffusionbayes.github.io/ExtensibleMCMC.jl/dev/)-1">Update steps from <a href="https://juliadiffusionbayes.github.io/ExtensibleMCMC.jl/dev/">ExtensibleMCMC.jl</a></a><a class="docs-heading-anchor-permalink" href="#Update-steps-from-[ExtensibleMCMC.jl](https://juliadiffusionbayes.github.io/ExtensibleMCMC.jl/dev/)-1" title="Permalink"></a></h3><p>An important thing to mention is that any update from <a href="https://juliadiffusionbayes.github.io/ExtensibleMCMC.jl/dev/">ExtensibleMCMC.jl</a> will work for the parameter update step with diffusions. In particular we may use adaptive schemes:</p><pre><code class="language-julia">mcmc_params = (
+    mcmc = MCMC(
+        [
+            PathImputation(0.96, FitzHughNagumoAux),
+            RandomWalkUpdate(
+                UniformRandomWalk([0.01]), [1];
+                adpt=AdaptationUnifRW( # seems that doesn;t work
+                    [0.0];
+                    adapt_every_k_steps=50,
+                    scale=0.05,
+                ),
+            ),
+        ];
+        backend=DiffusionMCMCBackend(),
+    ),
+    num_mcmc_steps = Integer(1e3),
+    data = init_obs,
+    θinit = OrderedDict(
+        :REC1_s =&gt; -0.8,
+        #NOTE currently we must start from the same parameter that was set in AllObservations,
+        #TODO relax this in the near future.
+    ),
 )
 
-mcmc_kwargs = (
-    path_buffer_size = 10,
-	dt = 0.001,
-)
-
-# run the MCMC
-glob_ws, loc_ws = run!(mcmc_params...; mcmc_kwargs...)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../how_to_guides/blocking/">« (TODO) Do blocking</a><a class="docs-footer-nextpage" href="../inference_fpt/">(TODO) Inference from first-passage time observations »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 24 May 2020 16:35">Sunday 24 May 2020</span>. Using Julia version 1.4.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+glob_ws, loc_ws = run!(mcmc_params...; mcmc_kwargs...)</code></pre><p><img src="../../assets/tutorials/simple_inference/fhn_inference_adpt_chain.png" alt="fhn_inference_adpt_chain"/></p><p>but also many others. See [...] for an overview of choices.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../how_to_guides/blocking/">« (TODO) Do blocking</a><a class="docs-footer-nextpage" href="../conjugate_updates/">(TODO) Conjugate updates for the FitzHugh–Nagumo model »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 25 May 2020 15:32">Monday 25 May 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
