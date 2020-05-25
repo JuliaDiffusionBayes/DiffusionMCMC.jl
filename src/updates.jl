@@ -20,31 +20,43 @@ auxiliary laws to `P`.
 Base constructor v2. Initialize each recording with its own value of `ρ` and set
 auxiliary laws to `P`.
 """
-struct PathImputation{T} <: MCMCDiffusionImputation
-    ρs::Vector{Vector{T}} #TODO change to simply Vector{T} as each recording may have only one ρ
+struct PathImputation{T,A} <: MCMCDiffusionImputation
+    ρs::Vector{Vector{T}}
     aux_laws
-    #adpt::
-    PathImputation(ρ::T, P) where T<:Number = new{T}([[ρ]], P)
+    adpt::A
 
-    PathImputation(ρ::T, P) where T<:Vector = new{eltype(ρ)}([ρ], P)
+    function PathImputation(ρ::T, P; adpt=NoAdaptation()) where T<:Number
+        _adpt, A = init_path_imp_adpt(adpt)
+        new{T,A}([[ρ]], P, _adpt)
+    end
 
-    function PathImputation(ρs::T, P) where T<:Vector{<:Vector} #TODO remove
-        new{eltype(ρs[1])}(ρs, P)
+    function PathImputation(ρ::T, P; adpt=NoAdaptation()) where T<:Vector
+        _adpt, A = init_path_imp_adpt(adpt)
+        new{eltype(ρ),A}([ρ], P, _adpt)
+    end
+
+    function PathImputation(
+            ρs::T, P; adpt=NoAdaptation()
+        ) where T<:Vector{<:Vector}
+        _adpt, A = init_path_imp_adpt(adpt)
+        new{eltype(ρs[1]),A}(ρs, P, _adpt)
     end
 end
 
 init_update!(updt::eMCMC.MCMCUpdate, block_layout) = nothing
 
 function init_update!(updt::PathImputation, block_layout)
-    Δ = length(block_layout) - length(updt.ρs)
+    num_recordings = length(block_layout)
+    Δ = num_recordings - length(updt.ρs)
     if Δ > 0
         for i in 1:Δ
-            push!(updt.ρs, [0.8])
+            push!(updt.ρs, [updt.ρs[1][1]])
         end
     end
     for i in 1:length(updt.ρs)
         update_ρ!(updt.ρs[i], block_layout[i])
     end
+    resize_adpt!(updt.adpt, num_recordings)
 end
 
 function update_ρ!(ρs::Vector, block_layout)

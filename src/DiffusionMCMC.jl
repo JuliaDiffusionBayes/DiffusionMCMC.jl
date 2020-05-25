@@ -2,7 +2,7 @@ module DiffusionMCMC
 
     using DiffusionDefinition, ObservationSchemes, GuidedProposals
     using ExtensibleMCMC
-    using OrderedCollections
+    using OrderedCollections, DataStructures
 
     import ExtensibleMCMC: ll, ll°, state, state°, accepted, set_accepted!
 
@@ -23,9 +23,11 @@ module DiffusionMCMC
     include("workspaces.jl") # ✗
     include("path_saving_buffer.jl")
     include("updates.jl") # ✗
+    include("adaptation.jl")
     include("schedule.jl")
     include("run!_alterations.jl")
 
     export DiffusionMCMCBackend
     export PathImputation, StartingPointsUpdate, StartingPointsLangevinUpdate
+    export AdaptationPathImputation
 end # module

@@ -127,6 +127,22 @@ struct DiffusionGlobalWorkspace{T,SW,SWD,TD,TX} <: eMCMC.GlobalWorkspace{T}
 end
 
 function eMCMC.init_global_workspace(
+        backend::DiffusionMCMCBackend,
+        num_mcmc_steps,
+        updates::Vector{<:eMCMC.MCMCUpdate},
+        data,
+        θinit::Nothing;
+        kwargs...
+    ) where T
+    dummy = OrderedDict(
+        :none => -Inf, # no parameters needed for smoothing
+    )
+    eMCMC.init_global_workspace(
+        backend, num_mcmc_steps, updates, data, dummy; kwargs...
+    )
+end
+
+function eMCMC.init_global_workspace(
         ::DiffusionMCMCBackend,
         num_mcmc_steps,
         updates::Vector{<:eMCMC.MCMCUpdate},

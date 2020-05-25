@@ -4,6 +4,7 @@ authors = ["Sebastiano Grazzi", "Frank van der Meulen", "Marcin Mider", "Moritz 
 version = "0.1.0"
 
 [deps]
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 DiffusionDefinition = "c126fcb9-5a08-4fee-b75a-97eb446288b0"
 ExtensibleMCMC = "23b8d773-6ad0-4cfa-a2a0-a1f8bd765eb5"
 GuidedProposals = "2d53f948-c29b-4abe-a473-2cf2f1798516"

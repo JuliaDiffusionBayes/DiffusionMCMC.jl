@@ -34,7 +34,8 @@ makedocs(;
             "(TODO) Do blocking" => joinpath("how_to_guides", "blocking.md"),
         ],
         "Tutorials" => Any[
-            "Inference & smoothing for the FitzHugh Nagumo model" => joinpath("tutorials", "simple_inference.md"),
+            "Inference & smoothing for the FitzHugh–Nagumo model" => joinpath("tutorials", "simple_inference.md"),
+            "(TODO) Conjugate updates for the FitzHugh–Nagumo model" => joinpath("tutorials", "conjugate_updates.md"),
             "(TODO) Inference from first-passage time observations" => joinpath("tutorials", "inference_fpt.md"),
             "(TODO) Mixed-effect models" => joinpath("tutorials", "mixed_effects_models.md"),
         ],
