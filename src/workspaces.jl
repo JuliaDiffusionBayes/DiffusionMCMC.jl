@@ -307,13 +307,13 @@ struct LocalUpdtParamNames
 end
 
 """
-    struct DiffusionLocalWorkspace{T,SW,SWD,Tpr} <: eMCMC.LocalWorkspace{T}
+    struct DiffusionLocalWorkspace{T,SW,SWD,Tpr,AH} <: eMCMC.LocalWorkspace{T}
         sub_ws::SW
         sub_ws°::SW
         sub_ws_diff::SWD
         sub_ws_diff°::SWD
         xx0_priors::Tpr
-        acceptance_history::Vector{Vector{Bool}}
+        acceptance_history::Vector{AH}
         loc_pnames::LocalUpdtParamNames
         critical_param_change::Vector{Bool}
     end
@@ -336,14 +336,15 @@ Local workspace for MCMC problems concerning diffusions.
 - `critical_param_change`: a list of flags for whether a given update by itself
                            prompts for recomputation of the guiding term
 """
-struct DiffusionLocalWorkspace{T,SW,SWD,Tpr} <: eMCMC.LocalWorkspace{T}
+struct DiffusionLocalWorkspace{T,SW,SWD,Tpr,CGH,AH} <: eMCMC.LocalWorkspace{T}
     sub_ws::SW
     sub_ws°::SW
     sub_ws_diff::SWD
     sub_ws_diff°::SWD
     xx0_priors::Tpr
-    acceptance_history::Vector{Vector{Bool}}
+    acceptance_history::Vector{AH}
     loc_pnames::LocalUpdtParamNames
+    cu_helper::CGH
     critical_param_change::Vector{Bool}
 end
 
@@ -360,7 +361,9 @@ function create_workspace(
         Float64[]
     )
     sub_ws = eMCMC.StandardLocalSubworkspace(_state, num_mcmc_steps)
-    xx0_priors = block_setup_x0_priors(global_ws.data, block_layout, global_ws.sub_ws_diff)
+    xx0_priors = block_setup_x0_priors(
+        global_ws.data, block_layout, global_ws.sub_ws_diff
+    )
     T = eltype(state(global_ws))
     sub_ws_diff = DiffusionLocalSubworkspace{T}(
         global_ws.sub_ws_diff, block_layout, num_mcmc_steps
@@ -370,7 +373,11 @@ function create_workspace(
     sub_ws_diff° = DiffusionLocalSubworkspace{T}(
         global_ws.sub_ws_diff°, block_layout, num_mcmc_steps
     )
-    a_h = [similar(v, Bool) for v in sub_ws_diff.ll_history]
+    a_h = (
+        typeof(mcmcupdate) <: eMCMC.MCMCParamUpdate ?
+        fill(false, num_mcmc_steps) :
+        [similar(v, Bool) for v in sub_ws_diff.ll_history]
+    )
 
     init_update!(mcmcupdate, block_layout)
 
@@ -383,6 +390,19 @@ function create_workspace(
         ) :
         LocalUpdtParamNames()
     )
+
+    cgu_helper = (
+        typeof(mcmcupdate) <: DiffusionConjugGsnUpdate ?
+        ConjugGsnHelper(
+            mcmcupdate,
+            global_ws,
+            sub_ws_diff.P,
+            lpn,
+            #NOTE finally, computation type, stay with outofplace for now
+        ) :
+        ConjugGsnHelper()
+    )
+
     crit_updt = (
         typeof(mcmcupdate) <: eMCMC.MCMCParamUpdate ?
         [
@@ -393,9 +413,12 @@ function create_workspace(
         [false for _ in eachindex(sub_ws_diff.P)]
     )
 
-    DiffusionLocalWorkspace{T,typeof(sub_ws),typeof(sub_ws_diff), typeof(xx0_priors)}(
-        sub_ws, deepcopy(sub_ws), sub_ws_diff, sub_ws_diff°, xx0_priors, a_h, lpn,
-        crit_updt,
+    DiffusionLocalWorkspace{
+        T, typeof(sub_ws), typeof(sub_ws_diff), typeof(xx0_priors),
+        typeof(cgu_helper), eltype(a_h)
+    }(
+        sub_ws, deepcopy(sub_ws), sub_ws_diff, sub_ws_diff°, xx0_priors, a_h,
+        lpn, cgu_helper, crit_updt,
     )
 end
 
@@ -453,7 +476,7 @@ function eMCMC.update_workspaces!(
 end
 
 accepted(ws::DiffusionLocalWorkspace, i::Int) = ws.acceptance_history[i]
-set_accepted!(ws::DiffusionLocalWorkspace, i::Int, accepted, j::Int=1) = (ws.acceptance_history[i][j] = accepted)
+#set_accepted!(ws::DiffusionLocalWorkspace, i::Int, accepted, j::Int=1) = (ws.acceptance_history[i][j] = accepted)
 ll(ws::DiffusionLocalWorkspace) = ws.sub_ws_diff.ll
 ll°(ws::DiffusionLocalWorkspace) = ws.sub_ws_diff°.ll
 ll(ws::DiffusionLocalWorkspace, i::Int) = ws.sub_ws_diff.ll_history[i]

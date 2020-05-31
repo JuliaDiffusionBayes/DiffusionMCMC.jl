@@ -302,8 +302,27 @@ function eMCMC.register_accept_reject_results!(
         ::Any
     )
     accepted && swap_laws_and_paths!(local_ws)
-    eMCMC.register_accept_reject_results!(accepted, updt, local_ws, step, 1)
+    eMCMC.register_accept_reject_results!(accepted, updt, local_ws, step)
     eMCMC.set_chain_param!(accepted, updt, global_ws, local_ws, step)
+end
+
+function eMCMC.register_accept_reject_results!(
+        _accepted::Bool,
+        updt::eMCMC.MCMCParamUpdate,
+        ws::DiffusionLocalWorkspace,
+        step,
+    )
+    register!(updt, _accepted) #TODO
+    set_accepted!(ws, step.mcmciter, _accepted)
+
+    # register proposal
+    ll°(ws, step.mcmciter)[1] = ll°(ws)[1]
+
+    # update local ll with accepted
+    _accepted && ( ll(ws)[1] = ll°(ws)[1] )
+
+    # register accepted
+    ll(ws, step.mcmciter)[1] = ll(ws)[1]
 end
 
 function swap_laws_and_paths!(ws::DiffusionLocalWorkspace)

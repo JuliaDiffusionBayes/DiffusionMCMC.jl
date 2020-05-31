@@ -2,7 +2,8 @@ module DiffusionMCMC
 
     using DiffusionDefinition, ObservationSchemes, GuidedProposals
     using ExtensibleMCMC
-    using OrderedCollections, DataStructures
+    using OrderedCollections, DataStructures, LinearAlgebra, Distributions
+    using GaussianDistributions, StaticArrays
 
     import ExtensibleMCMC: ll, ll°, state, state°, accepted, set_accepted!
 
@@ -29,5 +30,5 @@ module DiffusionMCMC
 
     export DiffusionMCMCBackend
     export PathImputation, StartingPointsUpdate, StartingPointsLangevinUpdate
-    export AdaptationPathImputation
+    export AdaptationPathImputation, DiffusionConjugGsnUpdate
 end # module

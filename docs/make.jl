@@ -28,6 +28,7 @@ makedocs(;
             "(TODO) Blocking" => joinpath("manual", "blocking.md"),
             "(TODO) Callbacks" => joinpath("manual", "callbacks.md"),
             "Diffusion Workspaces" => joinpath("manual", "workspaces.md"),
+            "Conjugate updates" => joinpath("manual", "conjugate_updates.md"),
         ],
         "How to..." => Any[
             "(TODO) Do smoothing" => joinpath("how_to_guides", "smoothing.md"),
@@ -35,7 +36,7 @@ makedocs(;
         ],
         "Tutorials" => Any[
             "Inference & smoothing for the FitzHugh–Nagumo model" => joinpath("tutorials", "simple_inference.md"),
-            "(TODO) Conjugate updates for the FitzHugh–Nagumo model" => joinpath("tutorials", "conjugate_updates.md"),
+            "Conjugate updates for the FitzHugh–Nagumo model" => joinpath("tutorials", "conjugate_updates.md"),
             "(TODO) Inference from first-passage time observations" => joinpath("tutorials", "inference_fpt.md"),
             "(TODO) Mixed-effect models" => joinpath("tutorials", "mixed_effects_models.md"),
         ],
