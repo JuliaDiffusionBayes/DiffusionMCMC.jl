@@ -1,2 +1,115 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>(TODO) Conjugate updates for the FitzHugh–Nagumo model · DiffusionMCMC.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">DiffusionMCMC.jl</span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../get_started/overview/">Get started</a></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox"/><label class="tocitem" for="menuitem-3"><span class="docs-label">User manual</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/how_extend/">Extension of ExtensibleMCMC.jl</a></li><li><a class="tocitem" href="../../manual/updates_and_decorators/">Updates &amp; Decorators</a></li><li><a class="tocitem" href="../../manual/blocking/">(TODO) Blocking</a></li><li><a class="tocitem" href="../../manual/callbacks/">(TODO) Callbacks</a></li><li><a class="tocitem" href="../../manual/workspaces/">Diffusion Workspaces</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">How to...</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../how_to_guides/smoothing/">(TODO) Do smoothing</a></li><li><a class="tocitem" href="../../how_to_guides/blocking/">(TODO) Do blocking</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox" checked/><label class="tocitem" for="menuitem-5"><span class="docs-label">Tutorials</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../simple_inference/">Inference &amp; smoothing for the FitzHugh–Nagumo model</a></li><li class="is-active"><a class="tocitem" href>(TODO) Conjugate updates for the FitzHugh–Nagumo model</a></li><li><a class="tocitem" href="../inference_fpt/">(TODO) Inference from first-passage time observations</a></li><li><a class="tocitem" href="../mixed_effects_models/">(TODO) Mixed-effect models</a></li></ul></li><li><a class="tocitem" href="../../module_index/">Index</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>(TODO) Conjugate updates for the FitzHugh–Nagumo model</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>(TODO) Conjugate updates for the FitzHugh–Nagumo model</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaDiffusionBayes/DiffusionMCMC.jl/blob/master/docs/src/tutorials/conjugate_updates.md#L" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Conjugate-updates-for-the-FitzHugh–Nagumo-model-1"><a class="docs-heading-anchor" href="#Conjugate-updates-for-the-FitzHugh–Nagumo-model-1">Conjugate updates for the FitzHugh–Nagumo model</a><a class="docs-heading-anchor-permalink" href="#Conjugate-updates-for-the-FitzHugh–Nagumo-model-1" title="Permalink"></a></h1><hr/></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../simple_inference/">« Inference &amp; smoothing for the FitzHugh–Nagumo model</a><a class="docs-footer-nextpage" href="../inference_fpt/">(TODO) Inference from first-passage time observations »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 25 May 2020 15:32">Monday 25 May 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Conjugate updates for the FitzHugh–Nagumo model · DiffusionMCMC.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">DiffusionMCMC.jl</span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../get_started/overview/">Get started</a></li><li><input class="collapse-toggle" id="menuitem-3" type="checkbox"/><label class="tocitem" for="menuitem-3"><span class="docs-label">User manual</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../manual/how_extend/">Extension of ExtensibleMCMC.jl</a></li><li><a class="tocitem" href="../../manual/updates_and_decorators/">Updates &amp; Decorators</a></li><li><a class="tocitem" href="../../manual/blocking/">(TODO) Blocking</a></li><li><a class="tocitem" href="../../manual/callbacks/">(TODO) Callbacks</a></li><li><a class="tocitem" href="../../manual/workspaces/">Diffusion Workspaces</a></li><li><a class="tocitem" href="../../manual/conjugate_updates/">Conjugate updates</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-4" type="checkbox"/><label class="tocitem" for="menuitem-4"><span class="docs-label">How to...</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../how_to_guides/smoothing/">(TODO) Do smoothing</a></li><li><a class="tocitem" href="../../how_to_guides/blocking/">(TODO) Do blocking</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-5" type="checkbox" checked/><label class="tocitem" for="menuitem-5"><span class="docs-label">Tutorials</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../simple_inference/">Inference &amp; smoothing for the FitzHugh–Nagumo model</a></li><li class="is-active"><a class="tocitem" href>Conjugate updates for the FitzHugh–Nagumo model</a><ul class="internal"><li><a class="tocitem" href="#Reparameterization-1"><span>Reparameterization</span></a></li><li><a class="tocitem" href="#Preparation-1"><span>Preparation</span></a></li><li><a class="tocitem" href="#Inference-1"><span>Inference</span></a></li></ul></li><li><a class="tocitem" href="../inference_fpt/">(TODO) Inference from first-passage time observations</a></li><li><a class="tocitem" href="../mixed_effects_models/">(TODO) Mixed-effect models</a></li></ul></li><li><a class="tocitem" href="../../module_index/">Index</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Conjugate updates for the FitzHugh–Nagumo model</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Conjugate updates for the FitzHugh–Nagumo model</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/JuliaDiffusionBayes/DiffusionMCMC.jl/blob/master/docs/src/tutorials/conjugate_updates.md#L" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Conjugate-updates-for-the-FitzHugh–Nagumo-model-1"><a class="docs-heading-anchor" href="#Conjugate-updates-for-the-FitzHugh–Nagumo-model-1">Conjugate updates for the FitzHugh–Nagumo model</a><a class="docs-heading-anchor-permalink" href="#Conjugate-updates-for-the-FitzHugh–Nagumo-model-1" title="Permalink"></a></h1><hr/><blockquote><p>In this tutorial we will do parameter inference for the partially observed hypoelliptic version of the FitzHugh–Nagumo model using conjugate Gaussian updates.</p></blockquote><h2 id="Reparameterization-1"><a class="docs-heading-anchor" href="#Reparameterization-1">Reparameterization</a><a class="docs-heading-anchor-permalink" href="#Reparameterization-1" title="Permalink"></a></h2><hr/><p>The ordinarily parameterized FitzHugh–Nagumo model:</p><div>\[\begin{align*}
+\dd Y_t &amp;= \frac{1}{\epsilon}\left( Y_t - Y_t^3-X_t + s \right )\dd t,\\
+\dd X_t &amp;= \left( \gamma Y_t - X_t + \beta \right )\dd t + \sigma \dd W_t,
+\end{align*}\]</div><p>is not ideal for conjugate updates, as parameter <span>$ϵ$</span> cannot be updated with this method. However, it is possible to slightly reparameterize the model so that three parameters: <span>$(ϵ,s,γ)$</span> can be updated at once. The reparameterized model is given by the following SDE:</p><div>\[\begin{align*}
+\dd Y_t &amp;= \dot{Y}_t \dd t,\\
+\dd\dot{Y}_t &amp;= \left( (\epsilon-\gamma)Y_t -\epsilon Y_t^3 -\dot{Y}_t + s - \beta + \epsilon\left( 1-3Y_t^2 \right)\dot{Y}_t \right)\dd t + \sigma \dd W_t.
+\end{align*}\]</div><p>and can be loaded in with</p><pre><code class="language-julia">using DiffusionDefinition
+@load_diffusion FitzHughNagumoConjug</code></pre><p>For more information about the reparameterization see <a href="https://juliadiffusionbayes.github.io/DiffusionDefinition.jl/dev/predefined_processes/fitzhugh_nagumo/">this page</a>.</p><h2 id="Preparation-1"><a class="docs-heading-anchor" href="#Preparation-1">Preparation</a><a class="docs-heading-anchor-permalink" href="#Preparation-1" title="Permalink"></a></h2><hr/><p>Before we can start doing any inference we should perform the same preparatory steps as we did in the <a href="../simple_inference/#tutorials_start-1">previous tutorial</a>. Thus, before proceeding any further make sure that you&#39;ve loaded the libraries and simulated the data. Note that the data can be simulated as before:</p><pre><code class="language-julia">using DiffusionDefinition
+const DD = DiffusionDefinition
+@load_diffusion FitzHughNagumo
+θ = [0.1, -0.8, 1.5, 0.0, 0.3]
+P = FitzHughNagumo(θ...)</code></pre><p>i.e. using the original parameterization, or equivalently, using the new one:</p><pre><code class="language-julia">@load_diffusion FitzHughNagumoConjug
+θ = [10.0, -8.0, 15.0, 0.0, 3.0]</code></pre><p>Just make sure you transform the starting point accordingly via:</p><div>\[\left(
+    \begin{matrix}
+        y_0^{(\texttt{new})}\\
+        x_0^{(\texttt{new})}
+    \end{matrix}
+\right) =
+    \left(
+        \begin{matrix}
+        y_0^{(\texttt{old})}\\
+        \frac{1}{ϵ^{(\texttt{old})}}
+            \left[
+                y_0^{(\texttt{old})}
+                -\left(y_0^{(\texttt{old})}\right)^3
+                -x_0^{(\texttt{old})}+s^{(\texttt{old})}
+            \right]
+        \end{matrix}
+    \right),\]</div><p>so that the old point</p><div>\[(y_0^{(\texttt{old})},x_0^{(\texttt{old})})=(-1,-1),\]</div><p>becomes</p><div>\[(y_0^{(\texttt{new})},x_0^{(\texttt{new})})=(-1,2).\]</div><p>Below, we summarize the steps of loading in the libraries, simulating the data and preparing the observations. Note that this time, because we will want to deal with a harder problem of simultaneous estimation of three parameters we will make our lives a little easier and decrease the standard deviation of the noise on the observations by one order of magnitude.</p><pre><code class="language-julia"># load in all relevant libraries
+using DiffusionMCMC, ExtensibleMCMC, GuidedProposals
+using DiffusionDefinition, ObservationSchemes
+const DD = DiffusionDefinition
+const eMCMC = ExtensibleMCMC
+
+using StaticArrays, Plots
+using OrderedCollections, GaussianDistributions
+
+@load_diffusion FitzHughNagumoConjug
+
+# generate some data
+θ = [10.0, -8.0, 15.0, 0.0, 3.0]
+P = FitzHughNagumoConjug(θ...)
+tt, y1 = 0.0:0.0001:10.0, @SVector [-1.0, 2.0]
+X = rand(P, tt, y1)
+data = map(
+    x-&gt;(x[1], x[2][1] + 0.01randn()),
+    collect(zip(X.t, X.x))[1:1000:end]
+)[2:end]
+
+# and let&#39;s see how they look
+plot(X, Val(:vs_time), size=(800, 300))
+scatter!(getindex.(data, 1), getindex.(data, 2), label=&quot;data&quot;)</code></pre><p><img src="../../assets/tutorials/conjugate_updates/data.png" alt="data"/></p><div class="admonition is-success"><header class="admonition-header">Tip</header><div class="admonition-body"><p>The plot above is not very transparent as the ranges of coordinates are not really compatible for displaying on the same plot. One way to deal with this (which has an additional benefit of being more comparable to our previous tutorial) is to transform the second coordinate back to the original parameterization and plot that:</p><pre><code class="language-julia">plot(X.t, getindex.(X.x, 1), size=(800, 300))
+x_old = -1.0/P.ϵ .* getindex.(X.x, 2) .+ getindex.(X.x, 1) .- getindex.(X.x, 1) .^ 3 .+ P.s/P.ϵ
+plot!(X.t, x_old)</code></pre><p><img src="../../assets/tutorials/conjugate_updates/data_in_orig_param.png" alt="data_in_orig_param"/></p></div></div><pre><code class="language-julia"># finally, prepare the data
+recording = (
+    P = P,
+    obs = load_data(
+        ObsScheme(
+            LinearGsnObs(
+                0.0, (@SVector [0.0]);
+                L=(@SMatrix [1.0 0.0]), Σ=(@SMatrix [1e-4])
+            )
+        ),
+        data
+    ),
+    t0 = 0.0,
+    x0_prior = KnownStartingPt(y1),
+)
+observs = AllObservations()
+add_recording!(observs, recording)
+init_obs, _ = initialize(observs)</code></pre><h2 id="Inference-1"><a class="docs-heading-anchor" href="#Inference-1">Inference</a><a class="docs-heading-anchor-permalink" href="#Inference-1" title="Permalink"></a></h2><hr/><pre><code class="language-julia">
+@load_diffusion FitzHughNagumoConjugAuxSimple
+
+DD.const_parameter_names(::Type{&lt;:FitzHughNagumoConjug}) = (:β, :σ)
+DD.const_parameter_names(::Type{&lt;:FitzHughNagumoConjugAuxSimple}) = (:σ, :t0, :T, :vT, :xT)
+
+# and do the inference
+mcmc_params = (
+    mcmc = MCMC(
+        [
+            PathImputation(
+                0.99, FitzHughNagumoConjugAuxSimple;
+                adpt=AdaptationPathImputation(;
+                    adapt_every_k_steps = 50,
+                    scale = 0.05,
+                ),
+            ),
+            DiffusionConjugGsnUpdate(
+                [1,2,3],
+                Gaussian(
+                    (@SVector [0.0, 0.0, 0.0]),
+                    SDiagonal(1e4, 1e4, 1e4),
+                ),
+            )
+        ];
+        backend=DiffusionMCMCBackend(),
+    ),
+    num_mcmc_steps = Integer(1e5),
+    data = initialize(observs)[1],
+    θ_init = OrderedDict(
+        :REC1_ϵ =&gt; 10.0 , # param 1
+        :REC1_γ =&gt; 15.0 , # param 2
+        :REC1_s =&gt; -8.0 , # param 3
+    ),
+)
+
+mcmc_kwargs = (
+    path_buffer_size = 10,
+    dt = 0.001,
+)</code></pre><pre><code class="language-julia"># run the MCMC
+@time ws = run!(mcmc_params...; mcmc_kwargs...)</code></pre><p>It takes about 1min 30sec to run on my laptop.</p><pre><code class="language-julia"># inspect the results
+θθ = [map(x-&gt;x[2][i], ws[1].sub_ws.state_history) for i in 1:3]
+plot(θθ, layout=(3,1))
+plot!([[0,1e5], [0,1e5], [0,1e5]], [[10, 10], [15, 15], [-8,-8]])</code></pre><p><img src="../../assets/tutorials/conjugate_updates/chains.png" alt="chains"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../simple_inference/">« Inference &amp; smoothing for the FitzHugh–Nagumo model</a><a class="docs-footer-nextpage" href="../inference_fpt/">(TODO) Inference from first-passage time observations »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 31 May 2020 13:20">Sunday 31 May 2020</span>. Using Julia version 1.4.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
